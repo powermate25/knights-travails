@@ -45,7 +45,8 @@ function createGraph (x = 8) {
 
 const board = createGraph(8)
 
-function validEdgeMove(start = [0, 1]) {
+function validEdgeMoves(start = [2, 1]) {
+    let computedMoves = []
     let limit = Math.sqrt(board.length)
     clog(`Limit: ${limit}`)
     
@@ -59,7 +60,20 @@ function validEdgeMove(start = [0, 1]) {
     const downShort = x-1 < 0 ? false : x-1
     const leftLong = y-2 < 0 ? false : y-2
     const rightLong = y+2 > limit ? false : y+2
-    clog(top)
+    clog(rightLong)
+    computedMoves = [ 
+            [top, left], [top, right], 
+            [down, left], [down, right],
+            [topShort, leftLong], [topShort, rightLong], 
+            [downShort, leftLong], [downShort, rightLong]
+            ]
+    function getValidMoves (){
+        const filteredMoves = computedMoves.filter(i => !i.includes(false) )
+        return filteredMoves
+    }
+    const validMoves = getValidMoves()
+    clog(`Valid edges from ${start}: ${validMoves.length}`)
+    return validMoves
 }
 clog(board)
-clog( validEdgeMove() )
+clog( validEdgeMoves() )
