@@ -1,23 +1,6 @@
 const clog = console.log
 clog("Knights Travails")
 
-function knightMoves(curr = [0, 0], target = [0, 0]) {
-    clog(curr)
-    let x = curr[0]
-    let y = curr[1]
-    function goLeftDwn(){
-        clog("Going left(2x) & Down(1x)")
-        return curr = [x-1, y-2]
-    }
-    goLeftDwn()
-    return curr
-}
-
-
-/* clog(
-    knightMoves([3, 3], [4, 1] )
-) */
-
 function createGraph (x = 8) {
     x = x-1
     y = x-1
@@ -45,10 +28,10 @@ function createGraph (x = 8) {
 
 const board = createGraph(8)
 
-function validEdgeMoves(start = [2, 1]) {
-    let computedMoves = []
+function validEdgeList(start = [1, 2]) {
+    let allKnightsMoves = []
     let limit = Math.sqrt(board.length)
-    clog(`Limit: ${limit}`)
+    // clog(`Limit: ${limit}`)
     
     let x = start[0]
     let y = start[1]
@@ -60,20 +43,74 @@ function validEdgeMoves(start = [2, 1]) {
     const downShort = x-1 < 0 ? false : x-1
     const leftLong = y-2 < 0 ? false : y-2
     const rightLong = y+2 > limit ? false : y+2
-    clog(rightLong)
-    computedMoves = [ 
-            [top, left], [top, right], 
-            [down, left], [down, right],
-            [topShort, leftLong], [topShort, rightLong], 
-            [downShort, leftLong], [downShort, rightLong]
-            ]
-    function getValidMoves (){
-        const filteredMoves = computedMoves.filter(i => !i.includes(false) )
-        return filteredMoves
-    }
-    const validMoves = getValidMoves()
-    clog(`Valid edges from ${start}: ${validMoves.length}`)
+    
+    allKnightsMoves = [
+        [top, left], [top, right], 
+        [down, left], [down, right],
+        [topShort, leftLong], [topShort, rightLong], 
+        [downShort, leftLong], [downShort, rightLong]
+    ]
+    // clog(allKnightsMoves)
+    const validMoves = allKnightsMoves.filter(i => !i.includes(false) )
+    // clog(`List of edges from ${start}: ${validMoves.length}`)
+    // clog(validMoves)
     return validMoves
 }
-clog(board)
-clog( validEdgeMoves() )
+
+class VertexNode {
+    constructor (start = []) {
+        this.start = start
+        this.edges = validEdgeList(start)
+        this.previous = null
+    }
+}
+
+function knightMoves(startArr = [], endArr = []) {
+    let curr = new VertexNode(startArr)
+    let Q = []
+    Q.push(curr)
+    let visited = []
+    let previous
+    let count = 0
+    const isVisited = visited.some(i => {
+        if ( i && i.start.length === curr.start.length 
+            && i.start[0] === curr.start[0] 
+            && i.start[1] === curr.start[1] 
+        ) {return i}
+    })
+
+    while (Q.length > 0 && !isVisited) {
+        const matchFound = curr.start
+        .filter(i => endArr.includes(i))
+        .length === curr.start.length
+
+        if(matchFound) { return clog("Found! Details below"), clog(`Count: ${count}`), clog(curr) } 
+        else {clog("Not yet")}
+
+        curr.edges.forEach(i => {
+            Q.push( new VertexNode(i) )
+        })
+        visited.push(curr)
+        Q.shift()
+        curr = Q[0]
+        previous = curr
+        curr.previous = previous
+        // clog(previous)
+        count++
+    }
+    
+    
+     
+}
+
+
+// Logs
+// clog(board)
+clog( knightMoves([3, 3], [5, 4]) )
+
+let end = [0, 1, 3]
+let curr = [0, 1, 3]
+clog(
+    // check.filter(i => test.includes(i) ).length === test.length
+   // curr.filter(i => end.includes(i)).length === curr.length
+)
