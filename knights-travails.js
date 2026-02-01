@@ -1,7 +1,7 @@
 const clog = console.log
 clog("Knights Travails")
 
-function createGraph (x = 8) {
+function createGraphBfs (x = 8) {
     x = x-1
     y = x-1
     let cellRows = []
@@ -26,9 +26,10 @@ function createGraph (x = 8) {
     return cells
 }
 
-const board = createGraph(8)
+const board = createGraphBfs(8)
 
-function validEdgeList(start = [1, 2]) {
+function validEdgeList(start = [0, 0]) {
+    if ( !Array.isArray(start)  ) {throw new Error("Only array are allowed.")}
     let allKnightsMoves = []
     let limit = Math.sqrt(board.length)
     // clog(`Limit: ${limit}`)
@@ -52,8 +53,8 @@ function validEdgeList(start = [1, 2]) {
     ]
     // clog(allKnightsMoves)
     const validMoves = allKnightsMoves.filter(i => !i.includes(false) )
-    // clog(`List of edges from ${start}: ${validMoves.length}`)
-    // clog(validMoves)
+    //clog(`List of edges from ${start}: ${validMoves.length}`)
+    //clog(validMoves)
     return validMoves
 }
 
@@ -65,7 +66,8 @@ class VertexNode {
     }
 }
 
-function knightMoves(startArr = [], endArr = []) {
+/*
+function oldKnightMoves(startArr = [], endArr = []) {
     let curr = new VertexNode(startArr)
     let Q = []
     Q.push(curr)
@@ -84,30 +86,144 @@ function knightMoves(startArr = [], endArr = []) {
         .filter(i => endArr.includes(i))
         .length === curr.start.length
 
-        if(matchFound) { return clog("Found! Details below"), clog(`Count: ${count}`), clog(curr) } 
+        if(matchFound) {
+            clog("Found! Details below")
+            clog(curr)
+            clog(`Count: ${count}`)
+            return curr
+        } 
         else {clog("Not yet")}
 
         curr.edges.forEach(i => {
             Q.push( new VertexNode(i) )
         })
         visited.push(curr)
+        previous = curr
         Q.shift()
         curr = Q[0]
-        previous = curr
         curr.previous = previous
-        // clog(previous)
         count++
     }
-    
-    
-     
 }
+*/
 
+/*
+function knightMoves2(startArr = [], endArr = []) {
+    let count = 0
+    let tempQ = []
+    let visitedEdges = []
+    let allPaths = []
+    let curr = new VertexNode(startArr)
+    tempQ.push(curr)
+    
+    const isVisited = visitedEdges.some(i => {
+        if ( i && i.start.length === curr.start.length 
+            && i.start[0] === curr.start[0] 
+            && i.start[1] === curr.start[1] 
+        ) {return i}
+    })
+    // clog(isVisited)
+    
+    while (curr) {
+        const matchFound = curr.start
+        .filter(i => endArr.includes(i))
+        .length === curr.start.length
 
+        if (matchFound) {
+            clog("Found! Details below")
+            clog(curr)
+            clog(`Count: ${count}`)
+            allPaths.push(curr)
+            break
+        } 
+        if (!matchFound) {
+            clog("Not yet, still exploring!")
+        }
+        if (isVisited) {
+            clog("Already visited")
+            tempQ.shift()
+            curr = tempQ[0]
+            continue
+        }
+        
+        visitedEdges.push(curr)
+        curr.edges.forEach(i => {
+            tempQ.push(new VertexNode(i))
+        })
+        const previous = curr
+        tempQ.shift()
+        curr = tempQ[0]
+        curr ? curr.previous = previous : curr
+        count ++
+    }
+    clog(allPaths)
+}
+*/
+
+function knightMoves(startArr = [], endArr = []) {
+    let base = new VertexNode(startArr)
+    let trackingQ = []
+    trackingQ.push(base)
+
+    base.edges.forEach(i => {
+            trackingQ.push( new VertexNode(i) )
+        })
+    
+    let foundPaths = []
+    let visitedEdges = []
+    let count = 0
+    let Q = []
+    Q.push(base)
+
+    while (trackingQ.length > 0) {
+        //clog(Q[0].start)
+        const pointer = trackingQ[0]
+
+        const prev = Q[0]
+        const isVisited = visitedEdges.some(i => {
+            if ( i && i.start[0] === prev.start[0] 
+                && i.start[1] === prev.start[1] 
+                && i.start.length === prev.start.length
+            ) {return i}
+        })
+
+        if (isVisited) {
+            clog("Skipping already visited item")
+            clog( Q.shift().start )
+            // continue
+        }
+        else {
+            clog(`Adding to visited ${prev.start}`)
+            visitedEdges.push(prev)
+        }
+        
+        const matchFound = prev.start
+        .filter(i => endArr.includes(i))
+        .length === prev.start.length
+        
+        if (matchFound) {
+            clog("🔔 Found!")
+            foundPaths.push(prev)
+            clog(prev)
+            // clog(count)
+            Q = []
+            Q.push( trackingQ.shift() )
+        }
+        else {
+            clog("📢 Not yet!")
+            prev.edges.forEach(i => {
+                Q.push( new VertexNode(i) )
+            })
+            Q.shift()
+            Q[0].previous = prev
+            count ++
+        }
+    }
+    return foundPaths
+} 
 // Logs
 // clog(board)
-clog( knightMoves([3, 3], [5, 4]) )
-
+clog( knightMoves([0, 0], [1, 2]) ) 
 let end = [0, 1, 3]
 let curr = [0, 1, 3]
 clog(
