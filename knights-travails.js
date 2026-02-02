@@ -164,7 +164,8 @@ function knightMoves(startArr = [], endArr = []) {
     let base = new VertexNode(startArr)
     let trackingQ = []
     trackingQ.push(base)
-
+    clog("♻ Base")
+    clog(base)
     base.edges.forEach(i => {
             trackingQ.push( new VertexNode(i) )
         })
@@ -176,10 +177,11 @@ function knightMoves(startArr = [], endArr = []) {
     Q.push(base)
 
     while (trackingQ.length > 0) {
-        //clog(Q[0].start)
         const pointer = trackingQ[0]
 
         const prev = Q[0]
+        clog("Current Vertex")
+        clog(prev)
         const isVisited = visitedEdges.some(i => {
             if ( i && i.start[0] === prev.start[0] 
                 && i.start[1] === prev.start[1] 
@@ -189,7 +191,9 @@ function knightMoves(startArr = [], endArr = []) {
 
         if (isVisited) {
             clog("Skipping already visited item")
-            clog( Q.shift().start )
+            const visited = Q.shift()
+            clog( visited.start )
+            clog(Q)
             // continue
         }
         else {
@@ -197,9 +201,12 @@ function knightMoves(startArr = [], endArr = []) {
             visitedEdges.push(prev)
         }
         
-        const matchFound = prev.start
-        .filter(i => endArr.includes(i))
-        .length === prev.start.length
+        const matchFound = endArr.some(i => {
+            if ( i && endArr[0] === prev.start[0] 
+                && endArr[1] === prev.start[1] 
+                && endArr.length === prev.start.length
+            ) {return i}
+        })
         
         if (matchFound) {
             clog("🔔 Found!")
@@ -208,14 +215,32 @@ function knightMoves(startArr = [], endArr = []) {
             // clog(count)
             Q = []
             Q.push( trackingQ.shift() )
+            clog("🚨")
+            clog(Q[0])
         }
-        else {
+        else if (!matchFound) {
             clog("📢 Not yet!")
+            clog(Q)
             prev.edges.forEach(i => {
-                Q.push( new VertexNode(i) )
+                // Trying to avoid collision by reducing duplicates
+                // from Q with little success. (600ish to 33ish) :/
+                // Code is working but some paths will still cause
+                // infinity loop 
+                const collision = Q.some(x => {
+                    if ( x && x.start[0] === i[0] 
+                        && x.start[1] === i[1] 
+                        && x.start.length === i.length
+                    ) {return i}
+                })
+                if (!collision) {
+                    const temp = new VertexNode(i)
+                    temp.previous = prev
+                    Q.push(temp)
+                }
+                
             })
             Q.shift()
-            Q[0].previous = prev
+            // Q[0].previous = prev
             count ++
         }
     }
@@ -224,9 +249,3 @@ function knightMoves(startArr = [], endArr = []) {
 // Logs
 // clog(board)
 clog( knightMoves([0, 0], [1, 2]) ) 
-let end = [0, 1, 3]
-let curr = [0, 1, 3]
-clog(
-    // check.filter(i => test.includes(i) ).length === test.length
-   // curr.filter(i => end.includes(i)).length === curr.length
-)
