@@ -32,10 +32,10 @@ const board = createGraphBfs(8)
 function validEdgeList(start = [0, 0]) {
     if ( !Array.isArray(start)  ) {throw new Error("Only array are allowed.")}
     let allKnightsMoves = []
-    let limit = Math.sqrt(board.length) - 1
+    const limit = Math.sqrt(board.length) - 1
     
-    let x = start[0]
-    let y = start[1]
+    const x = start[0]
+    const y = start[1]
     const top = x+2 > limit ? false : x+2
     const down = x-2 < 0 ? false : x-2
     const left = y-1 < 0 ? false : y-1
@@ -68,8 +68,8 @@ class VertexNode {
 
 
 function knightMoves(startArr = [], endArr = []) {
-    let base = new VertexNode(startArr)
-    let trackingQ = []
+    const base = new VertexNode(startArr)
+    const trackingQ = []
     trackingQ.push(base)
     clog("♻ Base")
     clog(base)
@@ -80,86 +80,84 @@ function knightMoves(startArr = [], endArr = []) {
         })
     
     let foundPaths = []
+    let shortestPath2
     let visitedEdges = []
-    let count = 0
+    // let count = 0
     let Q = []
     Q.push(base)
 
-    while (trackingQ.length > 0) {
+    while (trackingQ[0] !== undefined) {
         const prev = Q[0]
-        clog("Current Vertex")
-        clog(prev)
-        const isVisited = visitedEdges.some(i => {
-            if ( i && i.start[0] === prev.start[0] 
-                && i.start[1] === prev.start[1] 
-                && i.start.length === prev.start.length
-            ) {return i}
+        const instantMatch = prev.edges.some(i => {
+            if ( i && i.toString() === endArr.toString() ) {
+                return i
+                }
         })
 
-        if (isVisited) {
-            clog("Skipping already visited item")
-            const visited = Q.shift()
-            clog( visited.start )
-            clog(Q)
-            // continue
-        }
-        else {
-            clog(`Adding to visited ${prev.start}`)
-            visitedEdges.push(prev)
-        }
-        
-        const matchFound = endArr.some(i => {
-            if ( i && endArr[0] === prev.start[0] 
-                && endArr[1] === prev.start[1] 
-                && endArr.length === prev.start.length
-            ) {return i}
-        })
-        
-        if (matchFound) {
-            clog("🔔 Found!")
-            foundPaths.push(prev)
-            clog(prev)
-            // clog(count)
+        if (instantMatch) {
+            clog("🔔 Shortest path found!")
+            let temp = new VertexNode(endArr)
+            temp.previous = prev
+            foundPaths.push(temp)
+            shortestPath2 = temp
+            clog(temp)
             Q = []
             Q.push( trackingQ.shift() )
-            clog("🚨")
-            clog(Q[0])
+            break
         }
-        else if (!matchFound) {
-            clog("📢 Not yet!")
-            clog(Q)
-            // if end target not found check for and remove duplicates 
-            // in Queue before continuing to prevent infinite loop event
-            for (let index = 0; index < Q.length; index ++) {
-                let back = Q.length
-                while (Q[back] && index !== back) {
-                    if ( Q[index].start.toString()
-                        === Q[back].start.toString()
-                    ) {
-                        clog("♻ Deleting")
-                        delete Q[back]
-                    }
-                    back -= 1
-                }
-            }
-            
-            prev.edges.forEach(i => {
-                // Avoid creating duplicates in Queue earlier
-                // by sacrificing little time complexing on each 
-                // iteration to gain more in the worse case scenario
-                const duplicates = Q.some(x => {
-                    if ( x && x.start[0] === i[0] 
-                        && x.start[1] === i[1] 
-                        && x.start.length === i.length
-                    ) {return i}
-                })
-                if (!duplicates) {
-                    const temp = new VertexNode(i)
-                    temp.previous = prev
-                    Q.push(temp)
-                }
+
+        if (!instantMatch) {
+            const isVisited = visitedEdges.some(i => {
+                if ( i && i.start.toString() 
+                    === prev.start.toString() 
+                ) {return i}
             })
-            Q.shift()
+
+            if (isVisited) {
+                clog("Skipping already visited item")
+                Q.forEach(i => {
+                    if( i && i.start.toString() 
+                        === prev.start.toString()
+                    ) { delete(Q[i]) }
+                })
+                Q.shift() 
+                while ( Q[0] === undefined ) { Q.shift() }
+            }
+            else {
+                clog(`Adding to visited ${prev.start}`)
+                visitedEdges.push(prev)
+            }
+        
+            const matchFound = endArr.some(i => {
+                if ( i && endArr.toString() 
+                    === prev.start.toString()
+                ) {return i}
+            })
+
+            if (matchFound) {
+                clog("🔔 Found!")
+                foundPaths.push(prev)
+                clog(prev)
+                Q = []
+                Q.push( trackingQ.shift() )
+                continue
+            }
+            else if (!matchFound) {
+                clog("📢 Not yet!")
+                prev.edges.forEach(i => {
+                    // Avoid creating duplicates in Queue earlier
+                    const duplicates = Q.some(x => {
+                        if ( x && x.start.toString() === i.toString() ) 
+                            {return i}
+                    })
+                    if (!duplicates) {
+                        const temp = new VertexNode(i)
+                        temp.previous = prev
+                        Q.push(temp)
+                    }
+                })
+                Q.shift()
+            }
         }
     }
     // return foundPaths
@@ -190,38 +188,9 @@ function knightMoves(startArr = [], endArr = []) {
         }
         return shortestPath
     }
-    return shortestPath()
+    return shortestPath2 // shortestPath()
 } 
 
 
 // Logs
-clog( knightMoves([0, 0], [3, 3]) ) 
-
-/*
-let test = knightMoves( [0, 0], [7, 7] )
-
-function shortestPath () {
-    let shortestPath = -1
-    for(let i in test) {
-        clog(test[i])
-        let curr = test[i]
-        let counter = 0
-        
-        function printPath(curr, res = "", base = [], path = []) {
-            if (!curr.previous) {
-                base.push(`${curr.start.toString()}`)
-                return curr
-            }
-            path.unshift(` => ${curr.start.toString()}`)
-            printPath(curr.previous, res, base, path, counter++)
-            return `${base}${path} in ${counter} moves`
-        }
-    clog( printPath(curr) )
-    curr.pathLength = counter
-    shortestPath = shortestPath < curr.pathLength ? curr : shortestPath
-    }
-    return shortestPath
-}
-
-clog(shortestPath())
-*/
+clog( knightMoves([3, 3], [0, 0]) ) 
