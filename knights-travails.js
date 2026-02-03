@@ -71,8 +71,6 @@ function knightMoves(startArr = [], endArr = []) {
     const base = new VertexNode(startArr)
     const trackingQ = []
     trackingQ.push(base)
-    clog("♻ Base")
-    clog(base)
     base.edges.forEach(i => {
         let temp = new VertexNode(i)
         temp.previous = base
@@ -80,9 +78,8 @@ function knightMoves(startArr = [], endArr = []) {
         })
     
     let foundPaths = []
-    let shortestPath2
+    let shortestPath
     let visitedEdges = []
-    // let count = 0
     let Q = []
     Q.push(base)
 
@@ -95,12 +92,10 @@ function knightMoves(startArr = [], endArr = []) {
         })
 
         if (instantMatch) {
-            clog("🔔 Shortest path found!")
             let temp = new VertexNode(endArr)
             temp.previous = prev
             foundPaths.push(temp)
-            shortestPath2 = temp
-            clog(temp)
+            shortestPath = temp
             Q = []
             Q.push( trackingQ.shift() )
             break
@@ -114,7 +109,6 @@ function knightMoves(startArr = [], endArr = []) {
             })
 
             if (isVisited) {
-                clog("Skipping already visited item")
                 Q.forEach(i => {
                     if( i && i.start.toString() 
                         === prev.start.toString()
@@ -124,10 +118,9 @@ function knightMoves(startArr = [], endArr = []) {
                 while ( Q[0] === undefined ) { Q.shift() }
             }
             else {
-                clog(`Adding to visited ${prev.start}`)
                 visitedEdges.push(prev)
             }
-        
+
             const matchFound = endArr.some(i => {
                 if ( i && endArr.toString() 
                     === prev.start.toString()
@@ -135,15 +128,12 @@ function knightMoves(startArr = [], endArr = []) {
             })
 
             if (matchFound) {
-                clog("🔔 Found!")
                 foundPaths.push(prev)
-                clog(prev)
                 Q = []
                 Q.push( trackingQ.shift() )
                 continue
             }
             else if (!matchFound) {
-                clog("📢 Not yet!")
                 prev.edges.forEach(i => {
                     // Avoid creating duplicates in Queue earlier
                     const duplicates = Q.some(x => {
@@ -160,35 +150,27 @@ function knightMoves(startArr = [], endArr = []) {
             }
         }
     }
-    // return foundPaths
-    function shortestPath() {
-        let shortestPath = -1
-        for(let path in foundPaths) {
-            clog(foundPaths[path])
-            let curr = foundPaths[path]
-            let counter = 0
-            
-            // using recursive function to construct path data
-            function printPath(curr, res = "", base = [], path = []) {
-                if (!curr.previous) {
-                    base.push(`${curr.start.toString()}`)
-                    return curr
-                }
-                path.unshift(` => ${curr.start.toString()}`)
-                printPath(curr.previous, res, base, path, counter++)
-                return `${base}${path} in ${counter} moves`
-            }
-            clog( printPath(curr) )
 
-        curr.pathLength = counter
-        shortestPath = shortestPath < 0 ? 
-        curr : shortestPath
-        shortestPath.pathLength < curr.pathLength ? 
-        shortestPath : curr
+    function returnPathLog(shortestPath) {
+        if (startArr.toString() === endArr.toString()) {
+            clog(`=> You're already there! Here's your path anyway:`)
+            clog(startArr)
+            return
         }
-        return shortestPath
+        const reversedPath = []
+        let curr = shortestPath
+        while(curr) {
+            reversedPath.unshift(curr.start)
+            curr = curr.previous
+        }
+        clog(`=> You made it in ${reversedPath.length-1} moves! Here's your path:`)
+        for (let step in reversedPath) {
+            clog(reversedPath[step])
+        }
     }
-    return shortestPath2 // shortestPath()
+
+    // Final return
+    return returnPathLog(shortestPath)
 } 
 
 
