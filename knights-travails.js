@@ -74,7 +74,9 @@ function knightMoves(startArr = [], endArr = []) {
     clog("♻ Base")
     clog(base)
     base.edges.forEach(i => {
-            trackingQ.push( new VertexNode(i) )
+        let temp = new VertexNode(i)
+        temp.previous = base
+            trackingQ.push( temp )
         })
     
     let foundPaths = []
@@ -160,11 +162,66 @@ function knightMoves(startArr = [], endArr = []) {
             Q.shift()
         }
     }
-    return foundPaths
+    // return foundPaths
+    function shortestPath() {
+        let shortestPath = -1
+        for(let path in foundPaths) {
+            clog(foundPaths[path])
+            let curr = foundPaths[path]
+            let counter = 0
+            
+            // using recursive function to construct path data
+            function printPath(curr, res = "", base = [], path = []) {
+                if (!curr.previous) {
+                    base.push(`${curr.start.toString()}`)
+                    return curr
+                }
+                path.unshift(` => ${curr.start.toString()}`)
+                printPath(curr.previous, res, base, path, counter++)
+                return `${base}${path} in ${counter} moves`
+            }
+            clog( printPath(curr) )
+
+        curr.pathLength = counter
+        shortestPath = shortestPath < 0 ? 
+        curr : shortestPath
+        shortestPath.pathLength < curr.pathLength ? 
+        shortestPath : curr
+        }
+        return shortestPath
+    }
+    return shortestPath()
 } 
 
 
 // Logs
-clog( knightMoves([0, 0], [7, 7]) ) 
+clog( knightMoves([0, 0], [3, 3]) ) 
 
+/*
+let test = knightMoves( [0, 0], [7, 7] )
 
+function shortestPath () {
+    let shortestPath = -1
+    for(let i in test) {
+        clog(test[i])
+        let curr = test[i]
+        let counter = 0
+        
+        function printPath(curr, res = "", base = [], path = []) {
+            if (!curr.previous) {
+                base.push(`${curr.start.toString()}`)
+                return curr
+            }
+            path.unshift(` => ${curr.start.toString()}`)
+            printPath(curr.previous, res, base, path, counter++)
+            return `${base}${path} in ${counter} moves`
+        }
+    clog( printPath(curr) )
+    curr.pathLength = counter
+    shortestPath = shortestPath < curr.pathLength ? curr : shortestPath
+    }
+    return shortestPath
+}
+
+clog(shortestPath())
+*/
